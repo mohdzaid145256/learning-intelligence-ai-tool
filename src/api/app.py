@@ -12,91 +12,118 @@ from src.insights.risk import detect_risk
 from src.insights.chapter_difficulty import chapter_difficulty
 from src.insights.summary import generate_summary
 
-# -----------------------------
+# -------------------------------------------------
 # App Initialization
-# -----------------------------
+# -------------------------------------------------
 app = FastAPI(title="AI Learning Intelligence Tool API")
 
-# -----------------------------
-# Absolute path setup (IMPORTANT)
-# -----------------------------
+# -------------------------------------------------
+# Absolute paths (important for Render)
+# -------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 UI_FILE_PATH = os.path.join(TEMPLATES_DIR, "index.html")
 
-
-# -----------------------------
-# Request Schema (API usage)
-# -----------------------------
+# -------------------------------------------------
+# Request schema (JSON API usage)
+# -------------------------------------------------
 class PredictionRequest(BaseModel):
     csv_path: str
 
-
-# -----------------------------
-# UI Endpoint (HTML Page)
-# -----------------------------
+# -------------------------------------------------
+# UI Endpoint (HTML page)
+# -------------------------------------------------
 @app.get("/", response_class=FileResponse)
 def serve_ui():
     """
-    Serves the minimal HTML UI (works on Render)
+    Serves the minimal HTML UI
     """
     return FileResponse(UI_FILE_PATH)
 
-
-# -----------------------------
-# Health Check Endpoint
-# -----------------------------
+# -------------------------------------------------
+# Health check
+# -------------------------------------------------
 @app.get("/health")
 def health_check():
     return {"message": "AI Learning Intelligence Tool API is running"}
 
-
-# -----------------------------
-# API Endpoint (JSON-based)
-# -----------------------------
+# -------------------------------------------------
+# API endpoint (JSON-based, CSV path)
+# -------------------------------------------------
 @app.post("/predict")
 def predict_api(request: PredictionRequest):
     """
     Predict using CSV path (API usage)
     """
-    df = load_csv(request.csv_path)
-    df = clean_data(df)
-    features = build_features(df)
+    try:
+        df = load_csv(request.csv_path)
+        df = clean_data(df)
+        features = build_features(df)
 
-    predictions = predict_completion(features[['avg_time', 'avg_score']])
-    df["prediction"] = predictions
+        predictions = predict_completion(features[["avg_time", "avg_score"]])
+        df["prediction"] = predictions
 
-    risk_df = detect_risk(features)
-    chapter_df = chapter_difficulty(df)
-    summary = generate_summary(risk_df, chapter_df)
+        risk_df = detect_risk(features)
+        chapter_df = chapter_difficulty(df)
+        summary = generate_summary(risk_df, chapter_df)
 
-    return {
-        "predictions": predictions.tolist(),
-        "insights": summary
-    }
+        return {
+            "predictions": predictions.tolist(),
+            "insights": summary
+        }
 
+    except Exception as e:
+        return {
+            "error": "Internal server error during API prediction",
+            "details": str(e)
+        }
 
-# -----------------------------
-# UI Endpoint (CSV Upload)
-# -----------------------------
+# -------------------------------------------------
+# UI endpoint (CSV upload with validation)
+# -------------------------------------------------
 @app.post("/predict-ui")
 async def predict_ui(file: UploadFile = File(...)):
     """
     Predict using uploaded CSV (UI usage)
+    Includes schema validation and safe error handling
     """
-    df = pd.read_csv(file.file)
-    df = clean_data(df)
-    features = build_features(df)
+    try:
+        df = pd.read_csv(file.file)
 
-    predictions = predict_completion(features[['avg_time', 'avg_score']])
-    df["prediction"] = predictions
+        # Required columns for ML pipeline
+        required_columns = {
+            "student_id",
+            "time_spent",
+            "score",
+            "completed"
+        }
 
-    risk_df = detect_risk(features)
-    chapter_df = chapter_difficulty(df)
-    summary = generate_summary(risk_df, chapter_df)
+        missing_columns = required_columns - set(df.columns)
+        if missing_columns:
+            return {
+                "error": "Invalid CSV format",
+                "missing_columns": list(missing_columns),
+                "required_columns": list(required_columns)
+            }
 
-    return {
-        "predictions": predictions.tolist(),
-        "insights": summary
-    }
+        df = clean_data(df)
+        features = build_features(df)
+
+        predictions = predict_completion(features[["avg_time", "avg_score"]])
+        df["prediction"] = predictions
+
+        risk_df = detect_risk(features)
+        chapter_df = chapter_difficulty(df)
+        summary = generate_summary(risk_df, chapter_df)
+
+        return {
+            "predictions": predictions.tolist(),
+            "insights": summary
+        }
+
+    except Exception as e:
+        return {
+            "error": "Internal server error during UI prediction",
+            "details": str(e)
+        }
 
