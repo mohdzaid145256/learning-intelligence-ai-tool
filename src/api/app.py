@@ -1,5 +1,5 @@
 from fastapi import FastAPI, UploadFile, File
-from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import pandas as pd
 import os
@@ -13,48 +13,46 @@ from src.insights.chapter_difficulty import chapter_difficulty
 from src.insights.summary import generate_summary
 
 # -------------------------------------------------
-# App Initialization
+# App initialization
 # -------------------------------------------------
 app = FastAPI(title="AI Learning Intelligence Tool API")
 
 # -------------------------------------------------
-# Absolute paths (important for Render)
+# Absolute paths (critical for Render)
 # -------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 UI_FILE_PATH = os.path.join(TEMPLATES_DIR, "index.html")
 
 # -------------------------------------------------
-# Request schema (JSON API usage)
+# Request schema (JSON API)
 # -------------------------------------------------
 class PredictionRequest(BaseModel):
     csv_path: str
 
 # -------------------------------------------------
-# UI Endpoint (HTML page)
+# UI endpoint (FORCED HTML READ — NO CACHING)
 # -------------------------------------------------
-@app.get("/", response_class=FileResponse)
+@app.get("/", response_class=HTMLResponse)
 def serve_ui():
     """
-    Serves the minimal HTML UI
+    Serve the HTML UI directly from file (no cache)
     """
-    return FileResponse(UI_FILE_PATH)
+    with open(UI_FILE_PATH, "r", encoding="utf-8") as f:
+        return f.read()
 
 # -------------------------------------------------
 # Health check
 # -------------------------------------------------
 @app.get("/health")
-def health_check():
+def health():
     return {"message": "AI Learning Intelligence Tool API is running"}
 
 # -------------------------------------------------
-# API endpoint (JSON-based, CSV path)
+# API endpoint (JSON-based prediction)
 # -------------------------------------------------
 @app.post("/predict")
 def predict_api(request: PredictionRequest):
-    """
-    Predict using CSV path (API usage)
-    """
     try:
         df = load_csv(request.csv_path)
         df = clean_data(df)
@@ -79,18 +77,14 @@ def predict_api(request: PredictionRequest):
         }
 
 # -------------------------------------------------
-# UI endpoint (CSV upload with validation)
+# UI endpoint (CSV upload + validation)
 # -------------------------------------------------
 @app.post("/predict-ui")
 async def predict_ui(file: UploadFile = File(...)):
-    """
-    Predict using uploaded CSV (UI usage)
-    Includes schema validation and safe error handling
-    """
     try:
         df = pd.read_csv(file.file)
 
-        # Required columns for ML pipeline
+        # Required schema
         required_columns = {
             "student_id",
             "time_spent",
@@ -98,11 +92,11 @@ async def predict_ui(file: UploadFile = File(...)):
             "completed"
         }
 
-        missing_columns = required_columns - set(df.columns)
-        if missing_columns:
+        missing = required_columns - set(df.columns)
+        if missing:
             return {
                 "error": "Invalid CSV format",
-                "missing_columns": list(missing_columns),
+                "missing_columns": list(missing),
                 "required_columns": list(required_columns)
             }
 
