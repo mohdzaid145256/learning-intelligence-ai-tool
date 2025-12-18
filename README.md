@@ -70,6 +70,8 @@ This project follows a clean, layered AI system design, separating data processi
 
 ---
 
+
+
 ## 🏗️ Project Architecture (Directory Structure)
 
 The project is organized using a **clean, modular structure** commonly used in production ML systems.
@@ -122,13 +124,13 @@ Click Run Prediction
 
 🔌 API Endpoints
 
-Health Check
+## Health Check
 * GET /health
 
-Predict (CSV Upload – UI)
+## Predict (CSV Upload – UI)
 * POST /predict-ui
 
-📘 Swagger documentation is available at:
+## Swagger documentation is available at:
 /docs
 
 ## 🛠️ Tech Stack
@@ -187,7 +189,7 @@ The project leverages a modern and reliable technology stack to build, deploy, a
   Clean separation of concerns for scalability and readability.
 
 ---
-🧑‍💻 Run Locally
+## Run Locally
 
 git clone https://github.com/mohdzaid145256/learning-intelligence-ai-tool.git
 cd learning-intelligence-ai-tool
@@ -199,9 +201,29 @@ uvicorn src.api.app:app --reload
 ## Then open in browser:
 http://127.0.0.1:8000
 
+## CLI Usage 
+
+The tool can also be executed from the command line without using the web interface.
+
+### Example Command
+```bash
+python -m src.main --data sample_learning_data.csv
+
+🚀 AI Learning Intelligence Tool Started
+✅ Loaded 6 records
+
+📊 Predictions:
+[1, 1, 1, 1, 1, 0]
+
+🧠 Insights:
+{'high_risk_students_count': 0, 'most_difficult_chapter': [3]}
+
+✅ Execution completed successfully
+
 👤 Author
 Mohd Zaid
 AI / Machine Learning / Data Engineering Enthusiast
+
 
 
 
