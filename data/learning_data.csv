@@ -1,0 +1,9 @@
+student_id,course_id,chapter,time_spent,score,completed
+S1,C1,1,30,60,1
+S1,C1,2,45,70,1
+S2,C1,1,10,20,0
+S2,C1,2,5,10,0
+S3,C1,1,50,80,1
+S3,C1,2,60,90,1
+S4,C1,1,15,30,0
+
