@@ -119,15 +119,6 @@ Click Run Prediction
 ⚠ High-risk student count
 📘 Most difficult chapter(s)
 
-📸 Screenshots
-
-🏠 Home Screen
-
-Shows file upload and prediction trigger.
-![UI Home](screenshots/ui_home.png)
-
-📊 Prediction Results
-Displays learner-wise completion status.
 
 🔌 API Endpoints
 
@@ -211,6 +202,7 @@ http://127.0.0.1:8000
 👤 Author
 Mohd Zaid
 AI / Machine Learning / Data Engineering Enthusiast
+
 
 
 
