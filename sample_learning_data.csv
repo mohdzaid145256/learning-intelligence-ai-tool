@@ -1,0 +1,8 @@
+student_id,course_id,chapter,time_spent,score,completed
+101,C1,1,45,85,1
+102,C1,2,30,78,1
+103,C1,3,20,55,0
+104,C2,1,60,90,1
+105,C2,2,25,65,0
+106,C2,3,15,40,0
+
