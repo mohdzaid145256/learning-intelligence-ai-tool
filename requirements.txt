@@ -1,7 +1,8 @@
+fastapi
+uvicorn
 pandas
 numpy
 scikit-learn
 joblib
 click
-pip freeze > requirements.txt
 
